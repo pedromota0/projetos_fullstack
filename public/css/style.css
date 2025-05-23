@@ -1,61 +1,125 @@
+/* === Estilo geral do corpo === */
 body {
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  background: linear-gradient(to bottom, #0d0d2b, #1e1e3f);
-  color: #fff;
+  background: linear-gradient(135deg, #000010, #120033); /* Fundo escuro com gradiente */
+  color: #eee; /* Cor clara para textos */
   margin: 0;
   padding: 0;
   text-align: center;
+  user-select: none; /* Evita seleção do texto por acidente */
 }
 
+/* === Estilo da barra de navegação === */
 nav {
-  background-color: #1a1a2e;
-  padding: 15px 0;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.4);
+  background-color: #1a1a2e; /* Azul escuro quase preto */
+  padding: 12px 0;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.7); /* Sombra sutil */
+  margin-bottom: 20px;
 }
 
+/* Links da navbar */
 nav a {
-  color: #ffffff;
+  color: #7fffd4; /* Verde água */
+  margin: 0 15px;
   text-decoration: none;
-  margin: 0 20px;
+  font-weight: 600;
   font-size: 18px;
-  font-weight: bold;
-  transition: color 0.3s;
+  transition: color 0.3s ease;
 }
 
+/* Efeito ao passar o mouse */
 nav a:hover {
-  color: #00ffd5;
+  color: #40e0d0; /* Verde água mais forte */
+  text-decoration: underline;
 }
 
+/* === Conteúdo principal === */
 main {
-  padding: 40px 20px;
+  max-width: 900px;
+  margin: 0 auto 40px;
+  padding: 0 15px;
 }
 
+/* Títulos principais */
+h1 {
+  font-size: 2.8rem;
+  margin-bottom: 15px;
+  text-shadow: 0 0 8px #40e0d0;
+}
+
+/* Parágrafos com instruções */
+p.instructions {
+  font-size: 1.15rem;
+  margin-bottom: 20px;
+  line-height: 1.5;
+  color: #aaddff;
+}
+
+/* === Botões estilizados === */
 button {
-  padding: 12px 24px;
-  background: #00ffd5;
+  background: linear-gradient(45deg, #00cc44, #009933);
   border: none;
-  color: #000;
-  font-size: 18px;
-  font-weight: bold;
+  color: white;
+  padding: 14px 32px;
+  font-size: 20px;
+  font-weight: 700;
   border-radius: 10px;
   cursor: pointer;
-  margin-top: 20px;
-  transition: background 0.3s;
+  box-shadow: 0 5px 15px rgba(0, 204, 68, 0.6);
+  transition: background 0.3s ease, box-shadow 0.3s ease;
+  margin-bottom: 15px;
 }
 
+/* Efeito hover nos botões */
 button:hover {
-  background: #00c2aa;
+  background: linear-gradient(45deg, #009933, #006622);
+  box-shadow: 0 8px 20px rgba(0, 153, 34, 0.8);
 }
 
-canvas {
-  background-color: #000;
-  border: 4px solid #ffffff;
+/* === Canvas do jogo === */
+#gameCanvas {
   display: block;
-  margin: 30px auto;
-  box-shadow: 0 0 20px #00ffd5;
+  margin: 0 auto 15px;
+  border: 4px solid #40e0d0; /* Borda verde água */
+  border-radius: 15px;
+  background-color: #000;
+  box-shadow: 0 0 20px #40e0d0;
 }
 
+/* === Score do jogo === */
 #score {
   font-size: 22px;
-  margin-top: 10px;
+  font-weight: 600;
+  color: #40e0d0;
+  text-shadow: 0 0 5px #00ffcc;
+}
+
+/* === Lista da equipe de desenvolvimento === */
+ul.dev-list {
+  list-style: none;
+  padding: 0;
+  max-width: 700px;
+  margin: 0 auto;
+  color: #aaddff;
+}
+
+ul.dev-list li {
+  background: rgba(64, 224, 208, 0.1);
+  margin-bottom: 15px;
+  padding: 15px 20px;
+  border-radius: 12px;
+  box-shadow: 0 0 8px rgba(64, 224, 208, 0.4);
+  text-align: left;
+  font-size: 1.1rem;
+}
+
+/* Negrito para títulos dentro da lista */
+ul.dev-list strong {
+  color: #40e0d0;
+}
+
+
+/* Para textos pequenos em links, botões, etc */
+small {
+  color: #88ffff;
 }

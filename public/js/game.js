@@ -1,72 +1,100 @@
+// Pega o canvas e o contexto 2D para desenhar os elementos
 const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
 
+// Variáveis principais do jogo
 let player, asteroids, bullets, gameRunning, score;
-let keys = {};
-let intervalId;
-let requestId;
-let backgroundStars = [];
+let keys = {};      // Objeto para controlar quais teclas estão pressionadas
+let intervalId;     // ID do setInterval para o score
+let requestId;      // ID do requestAnimationFrame para o loop principal
+let backgroundStars = []; // Estrelas de fundo para dar efeito espacial
 
+// Evento para tecla pressionada - marca tecla como true
 document.addEventListener("keydown", (e) => {
   keys[e.key.toLowerCase()] = true;
+
+  // Se apertar espaço e o jogo estiver rodando, atira
   if (e.code === "Space" && gameRunning) {
     shootBullet();
-    e.preventDefault(); // impede scroll e reinício
+    e.preventDefault(); // Evita scroll da página quando aperta espaço
   }
 });
 
-document.addEventListener("keyup", (e) => keys[e.key.toLowerCase()] = false);
+// Evento para tecla solta - marca tecla como false
+document.addEventListener("keyup", (e) => {
+  keys[e.key.toLowerCase()] = false;
+});
 
+// Função que inicia o jogo - reseta tudo e começa o loop
 function startGame() {
+  // Cancela animações e intervalos anteriores (para reiniciar)
   cancelAnimationFrame(requestId);
   clearInterval(intervalId);
 
-  player = { x: 400, y: 250, size: 40, speed: 4, angle: 0, vx: 0, vy: 0 };
-  asteroids = [];
-  bullets = [];
-  score = 0;
-  gameRunning = true;
-  keys = {};
-  generateBackgroundStars();
+  // Define o jogador com posição, tamanho, velocidade e ângulo inicial
+  player = {
+    x: canvas.width / 2 - 20,
+    y: canvas.height / 2 - 20,
+    size: 40,
+    speed: 4,
+    angle: 0,
+  };
 
+  asteroids = [];  // Lista de asteroides na tela
+  bullets = [];    // Lista de tiros na tela
+  score = 0;       // Tempo sobrevivido em segundos
+  gameRunning = true;
+  keys = {};       // Reseta teclas pressionadas
+  generateBackgroundStars();  // Cria estrelas no fundo
+
+  // Spawn inicial de 10 asteroides
   for (let i = 0; i < 10; i++) {
     spawnAsteroid();
   }
 
+  // Intervalo que atualiza o score a cada segundo e aumenta dificuldade
   intervalId = setInterval(() => {
     if (gameRunning) {
       score++;
       document.getElementById("score").textContent = `Tempo: ${score}s`;
+
+      // A cada 5 segundos, cria mais asteroides e aumenta velocidade deles
       if (score % 5 === 0) {
-        for (let i = 0; i < Math.floor(score / 10) + 1; i++) spawnAsteroid();
+        for (let i = 0; i < Math.floor(score / 10) + 1; i++) {
+          spawnAsteroid();
+        }
         asteroids.forEach(ast => ast.speed += 0.1);
       }
     }
   }, 1000);
 
+  // Começa o loop principal do jogo
   updateGame();
 }
 
+// Função para criar um asteroide em uma borda aleatória da tela
 function spawnAsteroid() {
-  const size = 30 + Math.random() * 30;
-  const edge = Math.floor(Math.random() * 4);
+  const size = 30 + Math.random() * 30; // Tamanho entre 30 e 60
+  const edge = Math.floor(Math.random() * 4); // 0=esquerda,1=direita,2=topo,3=baixo
   let x, y;
+
   switch (edge) {
     case 0: x = 0; y = Math.random() * canvas.height; break;
     case 1: x = canvas.width; y = Math.random() * canvas.height; break;
     case 2: x = Math.random() * canvas.width; y = 0; break;
     case 3: x = Math.random() * canvas.width; y = canvas.height; break;
   }
-  const speed = 1 + Math.random() * 1.5;
-  const angle = 0;
-  const rotationSpeed = (Math.random() - 0.5) * 0.02;
-  const shape = generateAsteroidShape(size);
 
-  asteroids.push({ x, y, size, speed, angle, rotationSpeed, shape });
+  const speed = 1 + Math.random() * 1.5; // Velocidade aleatória
+  const rotationSpeed = (Math.random() - 0.5) * 0.02; // Rotação aleatória
+  const shape = generateAsteroidShape(size); // Forma irregular
+
+  asteroids.push({ x, y, size, speed, angle: 0, rotationSpeed, shape });
 }
 
+// Gera a forma irregular do asteroide (polígono com vértices aleatórios)
 function generateAsteroidShape(size) {
-  const points = 7 + Math.floor(Math.random() * 4);
+  const points = 7 + Math.floor(Math.random() * 4); // 7 a 10 vértices
   const angleStep = (Math.PI * 2) / points;
   const shape = [];
 
@@ -79,11 +107,14 @@ function generateAsteroidShape(size) {
   return shape;
 }
 
+// Função para criar um tiro saindo da frente da nave (corrigido)
 function shootBullet() {
   const bulletSpeed = 7;
   const angle = player.angle;
-  const bx = player.x + player.size / 2 + Math.cos(angle) * player.size / 2;
-  const by = player.y + player.size / 2 + Math.sin(angle) * player.size / 2;
+
+  // Posição do tiro na ponta da nave (frente)
+  const bx = player.x + player.size / 2 + Math.cos(angle) * (player.size / 2);
+  const by = player.y + player.size / 2 + Math.sin(angle) * (player.size / 2);
 
   bullets.push({
     x: bx,
@@ -94,6 +125,7 @@ function shootBullet() {
   });
 }
 
+// Cria as estrelas de fundo com posições, cores e velocidades aleatórias
 function generateBackgroundStars() {
   backgroundStars = [];
   for (let i = 0; i < 80; i++) {
@@ -107,22 +139,29 @@ function generateBackgroundStars() {
   }
 }
 
+// Loop principal do jogo: atualiza lógica e redesenha tudo
 function updateGame() {
   if (!gameRunning) return;
 
+  // Velocidade do jogador
   let vx = 0, vy = 0;
+
+  // Atualiza velocidade conforme teclas W A S D
   if (keys["w"]) vy -= player.speed;
   if (keys["s"]) vy += player.speed;
   if (keys["a"]) vx -= player.speed;
   if (keys["d"]) vx += player.speed;
 
+  // Atualiza ângulo da nave só se estiver se movendo
   if (vx !== 0 || vy !== 0) {
     player.angle = Math.atan2(vy, vx);
   }
 
+  // Atualiza posição do jogador
   player.x += vx;
   player.y += vy;
 
+  // Se o jogador sair da tela, termina o jogo
   if (
     player.x <= 0 || player.x + player.size >= canvas.width ||
     player.y <= 0 || player.y + player.size >= canvas.height
@@ -131,31 +170,42 @@ function updateGame() {
     return;
   }
 
+  // Atualiza posição dos tiros, removendo os que saíram da tela
   bullets = bullets.filter(b => b.x > 0 && b.x < canvas.width && b.y > 0 && b.y < canvas.height);
-  for (let bullet of bullets) {
-    bullet.x += bullet.vx;
-    bullet.y += bullet.vy;
-  }
+  bullets.forEach(b => {
+    b.x += b.vx;
+    b.y += b.vy;
+  });
 
+  // Atualiza asteroides e verifica colisões
   for (let i = asteroids.length - 1; i >= 0; i--) {
     const a = asteroids[i];
+
+    // Distância do asteroide ao centro da nave
     const dx = player.x + player.size / 2 - a.x;
     const dy = player.y + player.size / 2 - a.y;
     const dist = Math.hypot(dx, dy);
+
+    // Asteroide se move em direção à nave
     a.x += (dx / dist) * a.speed;
     a.y += (dy / dist) * a.speed;
+
+    // Asteroide rotaciona
     a.angle += a.rotationSpeed;
 
+    // Checa colisão nave-asteroide (círculos)
     const playerRadius = player.size * 0.4;
     if (dist < a.size / 2 + playerRadius) {
       endGame("Você foi atingido!");
       return;
     }
 
+    // Checa colisão tiro-asteroide
     for (let j = bullets.length - 1; j >= 0; j--) {
       const b = bullets[j];
-      const dist = Math.hypot(b.x - a.x, b.y - a.y);
-      if (dist < a.size / 2) {
+      const distBullet = Math.hypot(b.x - a.x, b.y - a.y);
+      if (distBullet < a.size / 2) {
+        // Remove asteroide e tiro
         asteroids.splice(i, 1);
         bullets.splice(j, 1);
         break;
@@ -163,10 +213,14 @@ function updateGame() {
     }
   }
 
+  // Desenha tudo no canvas
   draw();
+
+  // Chama updateGame no próximo frame (loop infinito)
   requestId = requestAnimationFrame(updateGame);
 }
 
+// Desenha fundo, jogador, asteroides e tiros
 function draw() {
   drawSpaceBackground();
   drawPlayer();
@@ -174,115 +228,122 @@ function draw() {
   bullets.forEach(drawBullet);
 }
 
-function drawBullet(bullet) {
-  ctx.beginPath();
-  ctx.arc(bullet.x, bullet.y, bullet.radius, 0, Math.PI * 2);
-  ctx.fillStyle = "white";
-  ctx.fill();
-}
-
-function drawPlayer() {
-  const x = player.x + player.size / 2;
-  const y = player.y + player.size / 2;
-  const size = player.size;
-  const angle = player.angle;
-
-  ctx.save();
-  ctx.translate(x, y);
-  ctx.rotate(angle);
-
-  // Chama do motor
-  const flameSize = size / 4 + Math.random() * 2;
-  ctx.beginPath();
-  ctx.moveTo(-size / 6, size / 3);
-  ctx.lineTo(-size / 6, size / 2 + flameSize);
-  ctx.lineTo(0, size / 3 + flameSize);
-  ctx.lineTo(size / 6, size / 2 + flameSize);
-  ctx.lineTo(size / 6, size / 3);
-  ctx.fillStyle = "orange";
-  ctx.fill();
-
-  // Corpo principal
-  ctx.beginPath();
-  ctx.moveTo(0, -size / 2);
-  ctx.lineTo(-size / 3, size / 3);
-  ctx.lineTo(0, size / 6);
-  ctx.lineTo(size / 3, size / 3);
-  ctx.closePath();
-  ctx.fillStyle = "#00FFAA";
-  ctx.fill();
-  ctx.strokeStyle = "#007766";
-  ctx.stroke();
-
-  // Janela
-  ctx.beginPath();
-  ctx.arc(0, -size / 6, size / 8, 0, Math.PI * 2);
-  ctx.fillStyle = "#88ddff";
-  ctx.fill();
-  ctx.strokeStyle = "#337799";
-  ctx.stroke();
-
-  ctx.restore();
-}
-
-function drawAsteroid(asteroid) {
-  const { x, y, angle, shape } = asteroid;
-
-  ctx.save();
-  ctx.translate(x, y);
-  ctx.rotate(angle);
-
-  ctx.beginPath();
-  shape.forEach((point, index) => {
-    const px = Math.cos(point.angle) * point.radius;
-    const py = Math.sin(point.angle) * point.radius;
-    if (index === 0) {
-      ctx.moveTo(px, py);
-    } else {
-      ctx.lineTo(px, py);
-    }
-  });
-  ctx.closePath();
-
-  ctx.fillStyle = "#996633";
-  ctx.strokeStyle = "#442200";
-  ctx.lineWidth = 2;
-  ctx.fill();
-  ctx.stroke();
-  ctx.restore();
-}
-
+// Desenha as estrelas de fundo
 function drawSpaceBackground() {
-  let gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
-  gradient.addColorStop(0, "#120033");
-  gradient.addColorStop(1, "#000010");
-  ctx.fillStyle = gradient;
+  // Fundo preto
+  ctx.fillStyle = "#000";
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-  backgroundStars.forEach(star => {
-    star.x -= star.speed;
-    if (star.x < 0) star.x = canvas.width;
+  // Estrelas movem para baixo para efeito de movimento
+  for (let star of backgroundStars) {
     ctx.beginPath();
-    ctx.arc(star.x, star.y, star.radius, 0, Math.PI * 2);
     ctx.fillStyle = star.color;
+    ctx.shadowColor = star.color;
+    ctx.shadowBlur = 4;
+    ctx.arc(star.x, star.y, star.radius, 0, Math.PI * 2);
     ctx.fill();
-  });
 
-  for (let i = 0; i < 3; i++) {
-    const x = (canvas.width / 3) * i + 100 * Math.sin(Date.now() * 0.0002 + i);
-    const y = (canvas.height / 2) + 80 * Math.cos(Date.now() * 0.0003 + i);
-    const r = 100 + Math.random() * 20;
-    ctx.beginPath();
-    ctx.arc(x, y, r, 0, Math.PI * 2);
-    ctx.globalAlpha = 0.04;
-    ctx.fillStyle = ["#440055", "#332244", "#552255"][i % 3];
-    ctx.fill();
-    ctx.globalAlpha = 1;
+    // Move a estrela para baixo e reseta no topo quando sair da tela
+    star.y += star.speed;
+    if (star.y > canvas.height) star.y = 0;
   }
 }
 
-function endGame(msg) {
+// Desenha a nave do jogador como um triângulo apontando para o ângulo atual
+function drawPlayer() {
+  const cx = player.x + player.size / 2;
+  const cy = player.y + player.size / 2;
+  const size = player.size;
+
+  ctx.save();
+  ctx.translate(cx, cy);
+  ctx.rotate(player.angle);
+
+  // Corpo principal da nave (triângulo principal)
+  ctx.fillStyle = "#0f0";      // verde principal
+  ctx.strokeStyle = "#080";    // contorno verde escuro
+  ctx.lineWidth = 3;
+
+  ctx.beginPath();
+  ctx.moveTo(size / 2, 0);
+  ctx.lineTo(-size / 2, size / 3);
+  ctx.lineTo(-size / 2, -size / 3);
+  ctx.closePath();
+  ctx.fill();
+  ctx.stroke();
+
+  // Adiciona uma "cabine" no centro, oval azul
+  ctx.beginPath();
+  ctx.fillStyle = "#00ccff"; // azul claro
+  ctx.ellipse(0, 0, size / 5, size / 6, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.stroke();
+
+  // Adiciona detalhes laterais - “asas”
+  ctx.beginPath();
+  ctx.strokeStyle = "#0f0";
+  ctx.lineWidth = 2;
+  ctx.moveTo(-size / 2 + 5, size / 3);
+  ctx.lineTo(-size / 2 + 15, size / 1.7);
+  ctx.moveTo(-size / 2 + 5, -size / 3);
+  ctx.lineTo(-size / 2 + 15, -size / 1.7);
+  ctx.stroke();
+
+  // Luzes de propulsão traseiras (triângulos laranja)
+  ctx.fillStyle = "#ff6600";
+  ctx.beginPath();
+  ctx.moveTo(-size / 2, size / 10);
+  ctx.lineTo(-size / 2 - size / 6, 0);
+  ctx.lineTo(-size / 2, -size / 10);
+  ctx.closePath();
+  ctx.fill();
+
+  ctx.restore();
+}
+
+
+// Desenha cada asteroide como polígono irregular
+function drawAsteroid(ast) {
+  ctx.save();
+  ctx.translate(ast.x, ast.y);
+  ctx.rotate(ast.angle);
+  ctx.strokeStyle = "#888";
+  ctx.lineWidth = 2;
+  ctx.fillStyle = "#555";
+
+  ctx.beginPath();
+  // Começa pelo primeiro ponto
+  const firstPoint = ast.shape[0];
+  ctx.moveTo(firstPoint.radius * Math.cos(firstPoint.angle), firstPoint.radius * Math.sin(firstPoint.angle));
+  // Desenha os outros pontos
+  for (let i = 1; i < ast.shape.length; i++) {
+    const p = ast.shape[i];
+    ctx.lineTo(p.radius * Math.cos(p.angle), p.radius * Math.sin(p.angle));
+  }
+  ctx.closePath();
+  ctx.fill();
+  ctx.stroke();
+  ctx.restore();
+}
+
+// Desenha cada tiro como um círculo branco com sombra
+function drawBullet(bullet) {
+  ctx.beginPath();
+  ctx.fillStyle = "#fff";
+  ctx.shadowColor = "#fff";
+  ctx.shadowBlur = 10;
+  ctx.arc(bullet.x, bullet.y, bullet.radius, 0, Math.PI * 2);
+  ctx.fill();
+}
+
+// Função chamada quando o jogo termina
+function endGame(message) {
   gameRunning = false;
   clearInterval(intervalId);
-  alert(`${msg} Tempo sobrevivido: ${score}s`);
+  cancelAnimationFrame(requestId);
+
+  alert(message + ` Seu tempo foi: ${score} segundos.`);
 }
+
+// Expose startGame para o botão iniciar
+window.startGame = startGame;
