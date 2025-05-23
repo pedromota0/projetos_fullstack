@@ -3,52 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <title>Sobrevivência no Espaço</title>
-  <link rel="stylesheet" href="public/css/style.css" />
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      text-align: center;
-      background: #111;
-      color: white;
-      margin: 0;
-      padding: 0;
-    }
-    nav a {
-      color: white;
-      margin: 10px;
-      text-decoration: none;
-      font-weight: bold;
-    }
-    nav a:hover {
-      text-decoration: underline;
-    }
-    main {
-      margin-top: 20px;
-    }
-    #gameCanvas {
-      background: #000;
-      display: block;
-      margin: 20px auto;
-      border: 3px solid white;
-    }
-    button {
-      font-size: 18px;
-      padding: 10px 20px;
-      cursor: pointer;
-      background: #28a745;
-      border: none;
-      color: white;
-      border-radius: 5px;
-      transition: background 0.3s ease;
-    }
-    button:hover {
-      background: #218838;
-    }
-    #score {
-      font-size: 20px;
-      margin-top: 10px;
-    }
-  </style>
+  <link rel="stylesheet" href="../public/css/style.css" />
 </head>
 <body>
   <nav>
@@ -58,7 +13,11 @@
   </nav>
   <main>
     <h1>Sobrevivência no Espaço</h1>
-    <p>Use W, A, S, D para mover sua nave,aperte "Espaço" para destruir os asteróides e evite que cheguem perto de você . Sobreviva o máximo de tempo possível!</p>
+    <p>
+      Use <strong>W, A, S, D</strong> para mover sua nave. 
+      Pressione <strong>Espaço</strong> para disparar e destruir os asteroides.
+      Evite colisões e sobreviva o maior tempo possível!
+    </p>
     <button id="startBtn" onclick="startGame()">Iniciar Jogo</button>
     <canvas id="gameCanvas" width="800" height="500"></canvas>
     <p id="score">Tempo: 0s</p>
